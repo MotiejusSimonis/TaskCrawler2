@@ -5,14 +5,12 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class CrawlDTO {
+public class CollectionDTO {
     private String message;
     private boolean success;
-    private String sourceCode;
 
-    public CrawlDTO(String Message, boolean Success, String SourceCode) {
+    public CollectionDTO(String Message, boolean Success) {
         message = Message;
         success = Success;
-        sourceCode = SourceCode;
     }
 }

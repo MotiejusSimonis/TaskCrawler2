@@ -1,7 +1,11 @@
 package servises.impl;
 
+import models.DTO.CrawlDTO;
+import models.businessLogic.CollectionModel;
 import models.constants.DefaultPostParameters;
-import models.constants.URLForConnection;
+import models.constants.ConnectionURL;
+import models.constants.RegEx;
+import models.constants.Settings;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ByteArrayEntity;
@@ -10,40 +14,52 @@ import org.jsoup.Jsoup;
 import servises.ICrawlService;
 import servises.helpers.SSLCertificatesSetter;
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.HttpURLConnection;
 import java.net.URLConnection;
 import java.net.URLEncoder;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.*;
 
+/**
+ * Normally this class job would be to get source code from a web server,
+ * but in this case it returns from file.
+ * @CollectionModel would bring all the information that needs to be collected.
+ */
 public class CrawlService implements ICrawlService {
 
+    public CrawlDTO getSourceCode(CollectionModel model) {
+        try {
+            String fullPath = getClass().getClassLoader().getResource(Settings.RELATIVE_FILE_PATH).getPath().substring(1);
+            String sourceCode = new String(Files.readAllBytes(Paths.get(fullPath)), StandardCharsets.UTF_8);
+            return new CrawlDTO("", true, removeAllUnnecessaryEmptySpaces(sourceCode));
+        } catch (IOException e) {
+            e.printStackTrace();
+            return new CrawlDTO(e.getMessage(), false, null);
+        }
+    }
 
-    // Some Bug cant get Cookies, all thought code is right.
-    public Map<String, String> getCookiesWithJsoup(String URL) throws Exception {
-        SSLCertificatesSetter.setTrustAllCertsForJavaEE();
-        Connection.Response response =
-                Jsoup.connect(URLForConnection.CLASSIC_FLYSAS).execute();
-
-        return response.cookies();
+    public String removeAllUnnecessaryEmptySpaces(String str) {
+        return str.replaceAll(RegEx.EMPTY_LINES, "").replaceAll(RegEx.ANY_AMOUNT_OF_SPACES, " ");
     }
 
 
-    // At last no bugs and it works
-    public List<String> getCookiesWithJavaEE() throws Exception {
+    private List<String> getCookiesWithJavaEE() throws Exception {
         SSLCertificatesSetter.setTrustAllCertsForJavaEE();
-        URLConnection connection = new java.net.URL(URLForConnection.CLASSIC_FLYSAS).openConnection();
+        URLConnection connection = new java.net.URL(ConnectionURL.CLASSIC_FLYSAS).openConnection();
         return connection.getHeaderFields().get("Set-Cookie");
     }
 
 
-    public void post() throws Exception {
+    private void post() throws Exception {
         List<String> cookies = getCookiesWithJavaEE();
         Map<String, String> params = DefaultPostParameters.getParams();
         URL url = new URL("https://classic.flysas.com/en/");
-
 
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.setRequestMethod("POST");
@@ -80,12 +96,12 @@ public class CrawlService implements ICrawlService {
     }
 
 
-    public String post2(List<String> cookies) throws Exception {
+    private String post2(List<String> cookies) throws Exception {
         SSLCertificatesSetter.setTrustAllCertsForJavaEE();
 
         Map<String, String> params = DefaultPostParameters.getParams();
 
-        Connection connection = Jsoup.connect(URLForConnection.CLASSIC_FLYSAS_POST_2)
+        Connection connection = Jsoup.connect(ConnectionURL.CLASSIC_FLYSAS_POST_2)
                 .header("Host", "book.flysas.com")
                 .header("Connection", "keep-alive")
                 .header("Cache-Control", "max-age=0")
@@ -111,9 +127,10 @@ public class CrawlService implements ICrawlService {
         return connection.execute().parse().toString();
     }
 
-    public String post3() throws Exception{
 
-        HttpPost request = new HttpPost(URLForConnection.CLASSIC_FLYSAS_POST_2);
+    private String post3() throws Exception{
+
+        HttpPost request = new HttpPost(ConnectionURL.CLASSIC_FLYSAS_POST_2);
         request.setEntity(new ByteArrayEntity(DefaultPostParameters.getByteArrayForOutputStream()));
 
         HttpResponse response = SSLCertificatesSetter.setTrustAllCertsForHTTPClient().execute(request);
@@ -124,6 +141,7 @@ public class CrawlService implements ICrawlService {
             postData.append(c);
         return postData.toString();
     }
+
 
     private String getParamsLength(Map<String, String> params) throws Exception {
         StringBuilder postData = new StringBuilder();

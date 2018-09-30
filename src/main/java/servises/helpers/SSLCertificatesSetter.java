@@ -14,6 +14,8 @@ import javax.net.ssl.*;
 
 public final class SSLCertificatesSetter {
 
+    private SSLCertificatesSetter(){}
+
     public static void setTrustAllCertsForJavaEE() {
         TrustManager[] trustAllCerts = new TrustManager[]{
                 new X509TrustManager() {

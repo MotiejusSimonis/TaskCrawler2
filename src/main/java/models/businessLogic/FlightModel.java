@@ -2,6 +2,9 @@ package models.businessLogic;
 
 import lombok.Getter;
 import lombok.Setter;
+import models.constants.Airport;
+
+import java.math.BigDecimal;
 
 /**
  * This model contains information business are chosen to take from website.
@@ -11,11 +14,12 @@ import lombok.Setter;
  */
 @Getter
 @Setter
-public class FlightInfoModel {
-    private String departureAirport;
-    private String arrivalAirport;
-    private String connectionAirport;
+public class FlightModel {
+    private Airport departureAirport;
+    private Airport arrivalAirport;
+    private Airport connectionAirport;
     private String departureTime;
     private String arrivalTime;
-    private String lowFare;
+    private BigDecimal cheapestPrice;
+    private BigDecimal taxes;
 }

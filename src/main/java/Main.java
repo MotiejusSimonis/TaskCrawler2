@@ -1,26 +1,19 @@
-
-import servises.impl.CrawlService;
-import java.util.List;
+import models.DTO.CollectionDTO;
+import models.businessLogic.CollectionModel;
+import models.constants.Airport;
+import servises.ICollectionService;
+import servises.impl.CollectionService;
 
 public class Main {
     public static void main(String[] args) {
 
-        CrawlService crawlService = new CrawlService();
-        try {
-            crawlService.post();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
+        CollectionModel model = new CollectionModel();
+        model.setDeparture(Airport.STOCKHOLM);
+        model.setArrival(Airport.LONDON);
+        model.setConnection(Airport.OSLO);
 
-    private static void print(Object obj) {
-
-        if (obj instanceof List) {
-            for (Object item: (List) obj) {
-                System.out.println(item.toString());
-            }
-        } else {
-            System.out.println(obj.toString());
-        }
+        ICollectionService service = new CollectionService();
+        CollectionDTO dto = service.collect(model);
+        System.out.println(dto.getMessage());
     }
 }
